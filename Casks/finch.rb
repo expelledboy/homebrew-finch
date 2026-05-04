@@ -14,17 +14,18 @@ cask "finch" do
   # run without prompting. Requires the Xcode Command Line Tools — if `swift`
   # is missing, this preflight fails with a clear error.
   preflight do
+    src = "#{staged_path}/finch-#{version}"
     unless system "/usr/bin/xcrun", "--find", "swift", out: File::NULL, err: File::NULL
       odie "Finch builds from source and needs the Xcode Command Line Tools.\n" \
            "Install them with: xcode-select --install"
     end
     system_command "/usr/bin/make",
                    args:         ["build"],
-                   chdir:        staged_path,
+                   chdir:        src,
                    must_succeed: true
   end
 
-  app "Finch.app"
+  app "finch-#{version}/Finch.app", target: "Finch.app"
 
   postflight do
     # Force Launch Services to index the new bundle immediately so it shows
