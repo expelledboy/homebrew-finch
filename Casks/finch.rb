@@ -4,19 +4,23 @@ cask "finch" do
 
   url "https://github.com/expelledboy/finch/archive/refs/tags/v#{version}.tar.gz"
   name "Finch"
-  desc "Tiny, fast macOS browser router (Finicky alternative)"
+  desc "Tiny, fast browser router and Finicky alternative"
   homepage "https://github.com/expelledboy/finch"
 
   depends_on macos: ">= :ventura"
-  depends_on xcode: ["15.0", :build]
 
   # Build the .app from source. Locally-compiled binaries don't carry the
   # com.apple.quarantine xattr, so Gatekeeper allows the unsigned bundle to
-  # run without prompting.
+  # run without prompting. Requires the Xcode Command Line Tools — if `swift`
+  # is missing, this preflight fails with a clear error.
   preflight do
+    unless system "/usr/bin/xcrun", "--find", "swift", out: File::NULL, err: File::NULL
+      odie "Finch builds from source and needs the Xcode Command Line Tools.\n" \
+           "Install them with: xcode-select --install"
+    end
     system_command "/usr/bin/make",
-                   args: ["build"],
-                   chdir: staged_path,
+                   args:         ["build"],
+                   chdir:        staged_path,
                    must_succeed: true
   end
 
@@ -27,7 +31,7 @@ cask "finch" do
     # up in System Settings → Default web browser without a re-login.
     system_command "/System/Library/Frameworks/CoreServices.framework/Versions/A/" \
                    "Frameworks/LaunchServices.framework/Versions/A/Support/lsregister",
-                   args: ["-f", "#{appdir}/Finch.app"],
+                   args:         ["-f", "#{appdir}/Finch.app"],
                    must_succeed: false
   end
 
