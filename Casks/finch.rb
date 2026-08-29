@@ -1,6 +1,6 @@
 cask "finch" do
-  version "0.1.1"
-  sha256 "d5d99e79af4e0fe61f19a83db124904f9f29a1a5c8cd34936b32540950621b2a"
+  version "0.2.0"
+  sha256 "ce92232ed6fcd683203c0aca1dc8bb22d51209895a9ec3623992430f246feaa6"
 
   url "https://github.com/expelledboy/finch/archive/refs/tags/v#{version}.tar.gz"
   name "Finch"
