@@ -7,7 +7,7 @@ cask "finch" do
   desc "Tiny, fast browser router and Finicky alternative"
   homepage "https://github.com/expelledboy/finch"
 
-  depends_on macos: ">= :ventura"
+  depends_on macos: :ventura
 
   # Build the .app from source. Locally-compiled binaries don't carry the
   # com.apple.quarantine xattr, so Gatekeeper allows the unsigned bundle to
