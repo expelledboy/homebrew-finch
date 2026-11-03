@@ -9,31 +9,18 @@ cask "finch" do
 
   depends_on macos: :ventura
 
-  # Build the .app from source. Locally-compiled binaries don't carry the
-  # com.apple.quarantine xattr, so Gatekeeper allows the unsigned bundle to
-  # run without prompting. Requires the Xcode Command Line Tools — if `swift`
-  # is missing, this preflight fails with a clear error.
-  preflight do
-    src = "#{staged_path}/finch-#{version}"
-    unless system "/usr/bin/xcrun", "--find", "swift", out: File::NULL, err: File::NULL
-      odie "Finch builds from source and needs the Xcode Command Line Tools.\n" \
-           "Install them with: xcode-select --install"
-    end
-    system_command "/usr/bin/make",
-                   args:         ["build"],
-                   chdir:        src,
-                   must_succeed: true
-  end
-
+  # No lsregister step: Launch Services indexes an app as it lands in
+  # /Applications, and Homebrew's sandbox would block one anyway
   app "finch-#{version}/Finch.app", target: "Finch.app"
 
-  postflight do
-    # Force Launch Services to index the new bundle immediately so it shows
-    # up in System Settings → Default web browser without a re-login.
-    system_command "/System/Library/Frameworks/CoreServices.framework/Versions/A/" \
-                   "Frameworks/LaunchServices.framework/Versions/A/Support/lsregister",
-                   args:         ["-f", "#{appdir}/Finch.app"],
-                   must_succeed: false
+  # Build the .app from source. Locally-compiled binaries don't carry the
+  # com.apple.quarantine xattr, so Gatekeeper allows the unsigned bundle to
+  # run without prompting. Requires Xcode or its Command Line Tools
+  # (`xcode-select --install`); without them `make` fails with xcrun's
+  # "invalid active developer path". Install steps run in Homebrew's sandbox:
+  # the Makefile turns off SwiftPM's own, which cannot nest inside it.
+  preflight_steps do
+    run "/usr/bin/make", args: ["build"], chdir: "finch-#{version}"
   end
 
   uninstall quit: "com.finch.browser"
